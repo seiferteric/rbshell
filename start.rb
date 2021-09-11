@@ -2,11 +2,18 @@
 
 require_relative 'rbshell.rb'
 require "readline"
+shell = RbShell::Shell.new(Dir.pwd)
 while buf = Readline.readline("> ", true)
   begin
-    p RbShell.run buf
+    if !buf.empty?
+      r = shell.run buf
+      if r != nil
+        p r
+      end
+    end
   rescue => e
     p "invalid command: " + e.to_s
+    raise e
   end
 
 end
