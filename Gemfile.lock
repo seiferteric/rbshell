@@ -1,0 +1,17 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ffi (1.15.4)
+    magic (0.2.9)
+      ffi (>= 0.6.3)
+    ptools (1.4.2)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  magic
+  ptools
+
+BUNDLED WITH
+   2.2.27
