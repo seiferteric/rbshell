@@ -13,7 +13,6 @@ while buf = Readline.readline("> ", true)
     end
   rescue => e
     p "invalid command: " + e.to_s
-    raise e
   end
 
 end
