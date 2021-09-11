@@ -1,4 +1,7 @@
 #!/usr/bin/ruby
+
+require 'magic'
+
 module RbShell
   @@last_pwd = nil
   class Shell
@@ -56,6 +59,9 @@ module RbShell
       end
       def pwd
         Dir.pwd
+      end
+      def file(path)
+        Magic.guess_file_mime(File.expand_path(path))
       end
       def method_missing(c)
         #Should return an error class with to_c of "command not found" instead
