@@ -8,7 +8,7 @@ while buf = Readline.readline("> ", true)
     if !buf.empty?
       r = shell.run(buf)
       if r != nil
-        p r
+        pp r
       end
     end
   rescue => e

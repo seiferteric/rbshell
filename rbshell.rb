@@ -3,9 +3,11 @@ module RbShell
   @@last_pwd = nil
   class Shell
     def run(str)
+      args = str.split
+      args[1..] = args[1..].map {|a| "'" + a + "'"}
       cur_pwd = Dir.pwd
       com = Command.new
-      ret = com.instance_eval(str)
+      ret = com.instance_eval(args.join(' '))
       if Dir.pwd != cur_pwd
         @@last_pwd = cur_pwd
       end
