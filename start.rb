@@ -2,7 +2,7 @@
 
 require_relative 'rbshell.rb'
 require "readline"
-shell = RbShell::Shell.new(Dir.pwd)
+shell = RbShell::Shell.new
 while buf = Readline.readline("> ", true)
   begin
     if !buf.empty?

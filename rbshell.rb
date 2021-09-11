@@ -1,24 +1,18 @@
 #!/usr/bin/ruby
 module RbShell
-  @last_pwd = nil
+  @@last_pwd = nil
   class Shell
-    def initialize(pwd=Dir.pwd)
-      @last_pwd = pwd
-    end
     def run(str)
       cur_pwd = Dir.pwd
-      com = Command.new(@last_pwd)
+      com = Command.new
       ret = com.instance_eval(str)
       if Dir.pwd != cur_pwd
-        @last_pwd = cur_pwd
+        @@last_pwd = cur_pwd
       end
       return ret
     end
 
-    class Command
-    def initialize(pwd=Dir.pwd)
-      @last_pwd = pwd
-    end
+    class Command < Shell
       def ls(path=".")
         #paths = Dir.glob(File.expand_path(path))
         #if paths.length > 1
@@ -47,8 +41,8 @@ module RbShell
       def cd(path=nil)
         if path
           if path == "-"
-            if @last_pwd
-              Dir.chdir(File.expand_path(@last_pwd))
+            if @@last_pwd
+              Dir.chdir(File.expand_path(@@last_pwd))
             end
           else
             Dir.chdir(File.expand_path(path))
