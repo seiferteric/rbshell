@@ -1,6 +1,12 @@
 #!/usr/bin/ruby
 
+
+require_relative 'rbshell.rb'
+require "readline"
+require 'socket'
+require 'etc'
 require 'magic'
+require 'ptools'
 
 module RbShell
   @@last_pwd = nil
@@ -38,7 +44,7 @@ module RbShell
 
       end
       def rm(path)
-        File.unlink(Dir.glob(File.expand_path(path)))
+        File.unlink(File.expand_path(path))
       end
       def touch(path)
         open(Dir.glob(File.expand_path(path)), "w").close
@@ -63,11 +69,42 @@ module RbShell
       def file(path)
         Magic.guess_file_mime(File.expand_path(path))
       end
-      def method_missing(c)
-        #Should return an error class with to_c of "command not found" instead
-        "command not found"
+      def echo(str)
+        p str
+      end
+      def sh(cmd)
+        system(cmd)
+      end
+      def exit
+        exit!
+      end
+      def method_missing(c, args="")
+        cmd = c.to_s.split
+        if File.which(cmd[0])
+          system(c.to_s + ' ' + args)
+        else
+          #Should return an error class with to_c of "command not found" instead
+          "command not found"
+        end
+
       end
     end
   end
 end
 
+shell = RbShell::Shell.new
+
+
+while buf = Readline.readline(Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ ", true)
+  begin
+    if !buf.empty?
+      r = shell.run(buf)
+      if r != nil
+        pp r
+      end
+    end
+  rescue Exception => e
+    p "invalid command: " + e.to_s
+  end
+
+end
