@@ -16,7 +16,7 @@ while buf = Readline.readline(Etc.getlogin + "@" + Socket.gethostname + ":" + Di
       r = shell.run(buf)
       if r != nil
         #Explicit call to .to_s for array...
-        puts r.format
+        puts r.to_s
       end
     end
   rescue Exception => e

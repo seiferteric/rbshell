@@ -3,18 +3,26 @@
 require 'magic'
 require 'ptools'
 
-module Result
+class Result
   attr_accessor :command, :args, :data
-  def initialize(args=nil)
+  def initialize()
     yield self
-        super(args)
   end
 end
 
-class ResultArray < Array
-  include Result
+class ResultArray < Result
+  # include Result
+  include Enumerable
   def initialize(n)
-    super(n)
+    @data = Array.new(n)
+    super()
+  end
+  def +(other)
+    self.class.new(data + other.data)
+  end
+
+  def each(*args, &block)
+    data.each(*args, &block)
   end
 end
 
@@ -35,11 +43,12 @@ class RbShell
   class Command
     def ls(path=".")
       data = Dir.entries(File.expand_path(path))#.sort
+
       ResultArray.new(data) do |r|
         r.args = {command: 'ls', path: path}
         class << r
-          def format
-            self.join(" ")
+          def to_s
+            data.join(" ")
           end
         end
       end
