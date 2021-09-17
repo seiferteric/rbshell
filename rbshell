@@ -5,16 +5,18 @@ require 'readline'
 require 'socket'
 require 'etc'
 
-shell = RbShell::Shell.new
+shell = RbShell.new
 
-Readline.completion_proc = proc {|s| RbShell::Shell::Command.instance_methods(false).filter {|m| m.start_with? s}}
+#Should somehow use the completion profile from irb... that would be nice
+Readline.completion_proc = proc {|s| RbShell::Command.instance_methods(false).filter {|m| m.start_with? s}}
 
 while buf = Readline.readline(Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ ", true)
   begin
     if !buf.empty?
       r = shell.run(buf)
       if r != nil
-        pp r
+        #Explicit call to .to_s for array...
+        puts r.format
       end
     end
   rescue Exception => e
