@@ -1,3 +1,6 @@
 source 'https://rubygems.org'
 gem 'magic'
 gem 'ptools'
+gem 'ripper'
+gem 'reline'
+gem 'irb'

@@ -3,40 +3,17 @@
 require 'ripper'
 require 'reline'
 require 'irb/ruby-lex'
-
 require_relative 'lib/rbshell.rb'
-# require 'readline'
 require 'socket'
 require 'etc'
 
-
-
 shell = RbShell.new(File.join(__dir__, File.basename(__FILE__)))
-
-#Should somehow use the completion profile from irb... that would be nice
-# Readline.completion_proc = proc {|s| RbShell::Command.instance_methods(false).filter {|m| m.start_with? s}}
-
-# while buf = Readline.readline(Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ ", true)
-#   begin
-#     if !buf.empty?
-#       r = shell.run(buf)
-#       if r != nil
-#         #Explicit call to .to_s for array...
-#         puts (r.to_s)
-#       end
-#     end
-#   rescue Exception => e
-#     p "invalid command: " + e.to_s
-#   end
-
-# end
 
 $nprompt = ">"
 $cprompt = Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ "
 $prompt = $cprompt
 
 $prompt_proc = Proc.new {|buf| [$prompt]}
-
 
 Reline.prompt_proc = $prompt_proc
 
@@ -59,7 +36,8 @@ class TerminationChecker < RubyLex
 end
 
 checker = TerminationChecker.new
-while code = Reline.readmultiline(nil, true) { |code| checker.terminated?(code) }
+code = ""
+while code
   case code.chomp
   when ''
     # NOOP
@@ -78,5 +56,11 @@ while code = Reline.readmultiline(nil, true) { |code| checker.terminated?(code) 
       puts e.message
     end
   end
-
+  #Need this because it seems to crash on single backspace
+  begin
+    code = Reline.readmultiline(nil, true) { |code| checker.terminated?(code) }
+  rescue
+    code = ""
+  end
 end
+puts
