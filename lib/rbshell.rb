@@ -29,6 +29,9 @@ if File.exists? $config_path
 end
 
 Reline.prompt_proc = $prompt_proc
+Reline.completion_proc = Proc.new { |buf|
+    RbShell::Command.instance_methods(false).filter {|m| m.start_with? buf.split[0]}.map {|m| m.to_s}
+}
 
 class TerminationChecker < RubyLex
   def terminated?(code)
