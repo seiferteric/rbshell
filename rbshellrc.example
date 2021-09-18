@@ -1,0 +1,15 @@
+
+
+$prompt_proc = Proc.new {
+	branch = nil
+	if system("git branch 2>/dev/null 1>/dev/null")
+		branch = `git branch`.match(/^\*\s+(\w+)$/)[1]
+	end
+	[
+		#This is the main prompt
+		((Etc.getlogin + "@" + Socket.gethostname.split('.')[0]).green + ":" + reduce_path(Dir.pwd).blue + ":" + (branch ? "(#{branch})" : "").red + "$ ").bold,
+
+		#This is the prompt during multiline input
+		"> "
+	] 
+}

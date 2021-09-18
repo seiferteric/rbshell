@@ -1,8 +1,50 @@
 #!/usr/bin/ruby
 
+require 'ripper'
+require 'reline'
+require 'irb/ruby-lex'
+require 'socket'
+require 'etc'
 require 'magic'
 require 'ptools'
+require 'colorize'
 
+$config_path = File.expand_path("~/.rbshellrc")
+$prompt = Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ "
+$prompt_proc = Proc.new {|buf| [$prompt, "> "]}
+
+HOME = File.expand_path("~")
+def reduce_path(path)
+  if path.start_with? HOME
+    return "~" + path[HOME.length..]
+  end
+  path
+end
+
+
+
+if File.exists? $config_path
+  eval(File.open($config_path).read)
+
+end
+
+Reline.prompt_proc = $prompt_proc
+
+class TerminationChecker < RubyLex
+  def terminated?(code)
+    code.gsub!(/\n*$/, '').concat("\n")
+    @tokens = Ripper.lex(code)
+    continue = process_continue
+    code_block_open = check_code_block(code)
+    indent = process_nesting_level
+    ltype = process_literal_type
+    if code_block_open or ltype or continue or indent > 0
+      false
+    else
+      true
+    end
+  end
+end
 
 #Do we need the result classes? Or just use raw array, hash, string etc. ?
 class Result
@@ -56,6 +98,38 @@ class RbShell
 
   def initialize(path)
     $exec_path = path
+
+  end
+  def start
+    checker = TerminationChecker.new
+    code = ""
+    while code
+      case code.chomp
+      when ''
+        # NOOP
+      else
+        begin
+          r = self.run(code)
+          if r != nil
+            #Explicit call to .to_s for array...
+            puts (r.to_s)
+          end
+        rescue ScriptError, StandardError => e
+          puts "Traceback (most recent call last):"
+          e.backtrace.reverse_each do |f|
+            puts "        #{f}"
+          end
+          puts e.message
+        end
+      end
+      #Need this because it seems to crash on single backspace
+      begin
+        code = Reline.readmultiline(nil, true) { |code| checker.terminated?(code) }
+      rescue
+        code = ""
+      end
+    end
+    puts
   end
   def run(str)
     #args = str.split
@@ -135,7 +209,7 @@ class RbShell
       exit!
     end
     def reload
-      exec $exec_path
+      exec("ruby #{$exec_path}")
     end
     def method_missing(c, args="")
       cmd = c.to_s.split
@@ -175,3 +249,5 @@ class Hash
     merge!({key => val})
   end
 end
+
+

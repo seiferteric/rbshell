@@ -1,66 +1,7 @@
 #!/usr/bin/ruby
 
-require 'ripper'
-require 'reline'
-require 'irb/ruby-lex'
 require_relative 'lib/rbshell.rb'
-require 'socket'
-require 'etc'
 
 shell = RbShell.new(File.join(__dir__, File.basename(__FILE__)))
 
-$nprompt = ">"
-$cprompt = Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ "
-$prompt = $cprompt
-
-$prompt_proc = Proc.new {|buf| [$prompt]}
-
-Reline.prompt_proc = $prompt_proc
-
-class TerminationChecker < RubyLex
-  def terminated?(code)
-    code.gsub!(/\n*$/, '').concat("\n")
-    @tokens = Ripper.lex(code)
-    continue = process_continue
-    code_block_open = check_code_block(code)
-    indent = process_nesting_level
-    ltype = process_literal_type
-    if code_block_open or ltype or continue or indent > 0
-      $prompt = $nprompt
-      false
-    else
-      $prompt = $cprompt
-      true
-    end
-  end
-end
-
-checker = TerminationChecker.new
-code = ""
-while code
-  case code.chomp
-  when ''
-    # NOOP
-  else
-    begin
-      r = shell.run(code)
-      if r != nil
-        #Explicit call to .to_s for array...
-        puts (r.to_s)
-      end
-    rescue ScriptError, StandardError => e
-      puts "Traceback (most recent call last):"
-      e.backtrace.reverse_each do |f|
-        puts "        #{f}"
-      end
-      puts e.message
-    end
-  end
-  #Need this because it seems to crash on single backspace
-  begin
-    code = Reline.readmultiline(nil, true) { |code| checker.terminated?(code) }
-  rescue
-    code = ""
-  end
-end
-puts
+shell.start
