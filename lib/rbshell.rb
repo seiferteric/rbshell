@@ -7,10 +7,6 @@ require 'magic'
 require 'ptools'
 require 'colorize'
 
-$config_path = File.expand_path("~/.rbshellrc")
-$prompt = Etc.getlogin + "@" + Socket.gethostname + ":" + Dir.pwd + "$ "
-$prompt_proc = Proc.new {|buf| [$prompt, "> "]}
-
 HOME = File.expand_path("~")
 def reduce_path(path)
   if path.start_with? HOME
@@ -19,6 +15,9 @@ def reduce_path(path)
   path
 end
 
+$config_path = File.expand_path("~/.rbshellrc")
+$prompt = Etc.getlogin + "@" + Socket.gethostname.split('.')[0] + ":" + reduce_path(Dir.pwd) + ":$ "
+$prompt_proc = Proc.new {|buf| [$prompt, "> "]}
 
 
 if File.exists? $config_path
